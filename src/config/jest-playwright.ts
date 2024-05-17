@@ -1,6 +1,7 @@
-import path from 'path';
-import { getProjectRoot } from '@storybook/core-common';
 import type { Config } from '@jest/types';
+import { getProjectRoot } from '@storybook/core-common';
+import path from 'path';
+import { getTestMatchByChanged } from 'src/util/getTestMatchByChanged';
 
 const getTestRunnerPath = () => process.env.STORYBOOK_TEST_RUNNER_PATH ?? '@storybook/test-runner';
 
@@ -49,6 +50,8 @@ export const getJestConfig = (): Config.InitialOptions => {
     TEST_BROWSERS,
     STORYBOOK_COLLECT_COVERAGE,
     STORYBOOK_JUNIT,
+    STORYBOOK_CHANGED_ONLY,
+    STORYBOOK_CHANGED
   } = process.env;
 
   const jestJunitPath = path.dirname(
@@ -71,7 +74,20 @@ export const getJestConfig = (): Config.InitialOptions => {
 
   const reporters = STORYBOOK_JUNIT ? ['default', jestJunitPath] : ['default'];
 
-  const testMatch = STORYBOOK_STORIES_PATTERN?.split(';') ?? [];
+  let testMatch = STORYBOOK_STORIES_PATTERN?.split(';') ?? [];
+
+
+  const workingDir = getProjectRoot();
+
+  if(STORYBOOK_CHANGED_ONLY) {
+    const changedFiles = STORYBOOK_CHANGED?.split(',') ?? [];
+
+    testMatch = getTestMatchByChanged({ changedFiles, testMatch, workingDir })
+
+    console.log(`📦 ${changedFiles.length} of modified files found!`);
+    console.log(changedFiles.join('\n'));
+  }
+
   const TEST_RUNNER_PATH = getTestRunnerPath();
 
   const config: Config.InitialOptions = {
@@ -86,6 +102,7 @@ export const getJestConfig = (): Config.InitialOptions => {
       '^.+\\.[jt]sx?$': swcJestPath,
     },
     snapshotSerializers: [jestSerializerHtmlPath],
+    passWithNoTests: Boolean(STORYBOOK_CHANGED_ONLY),
     testEnvironmentOptions: {
       'jest-playwright': {
         browsers: TEST_BROWSERS?.split(',')
