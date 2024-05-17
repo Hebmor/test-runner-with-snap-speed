@@ -1,22 +1,24 @@
 #!/usr/bin/env node
 
-import fs from 'fs';
-import { execSync } from 'child_process';
-import fetch from 'node-fetch';
 import canBindToHost from 'can-bind-to-host';
-import dedent from 'ts-dedent';
-import path from 'path';
-import tempy from 'tempy';
-import semver from 'semver';
+import { execSync } from 'child_process';
 import { detect as detectPackageManager } from 'detect-package-manager';
+import fs from 'fs';
+import fetch from 'node-fetch';
+import path from 'path';
+import semver from 'semver';
+import tempy from 'tempy';
+import dedent from 'ts-dedent';
 
+import { transformPlaywrightJson } from './playwright/transformPlaywrightJson';
 import { JestOptions, getCliOptions } from './util/getCliOptions';
 import { getStorybookMetadata } from './util/getStorybookMetadata';
 import { getTestRunnerConfig } from './util/getTestRunnerConfig';
-import { transformPlaywrightJson } from './playwright/transformPlaywrightJson';
 
+import { getProjectRoot } from '@storybook/core-common';
 import { glob } from 'glob';
 import { TestRunnerConfig } from './playwright/hooks';
+import { getChangedFiles } from './snap';
 
 // Do this as the first thing so that any code reading it knows the right env.
 process.env.BABEL_ENV = 'test';
@@ -238,6 +240,7 @@ async function getIndexTempDir(url: string) {
   let tmpDir: string;
   try {
     const indexJson = await getIndexJson(url);
+
     const titleIdToTest = transformPlaywrightJson(indexJson);
 
     tmpDir = tempy.directory();
@@ -352,6 +355,53 @@ const main = async () => {
     process.env.STORYBOOK_SKIP_TAGS = runnerOptions.skipTags;
   }
 
+  if (runnerOptions.changed) {
+    const workingDir = getProjectRoot();
+    const configPath = path.join(workingDir, 'to-config.json');
+
+    if(fs.existsSync(configPath)) {
+      const config = fs.readFileSync(configPath);
+      //@ts-ignore
+      const parsed: {dirs: string[]; marks: string[]; ignoreGitFiles: string[]; mainBranch: string, options: any} = JSON.parse(config as string);
+
+      process.env.STORYBOOK_CHANGED_ONLY = 'true';
+
+      const folders = parsed.dirs.map(dir => path.join(workingDir, dir));
+
+      const defaultMainBranch = 'main';
+      const defaultIgnoreGitFiles = ["package.json", "tsconfig.json", "yarn.lock", ".gitignore", ".yarn", "to-config.json", ".pnp.cjs", "__snapshots__", ".storybook"];
+      const defaultMarks = ['.stories'];
+
+      log(`🎯 Target branch for comparison: ${parsed.mainBranch ?? defaultMainBranch}`);
+      log(`📁 These occurrences will be ignored: ${parsed.ignoreGitFiles ?? defaultIgnoreGitFiles}`);
+      log(`📑 Tags for story files in Storybook: ${parsed.marks ?? defaultMarks}`);
+      log(`📁 Directories where storybook stories will be searched: ${parsed.dirs}`);
+
+      console.time('✔ The search for changes is completed in:');
+      const changed = await getChangedFiles(
+        {
+          folders,
+          marks: parsed.marks,
+          ignoreFiles: parsed.ignoreGitFiles,
+          mainBranch: parsed.mainBranch ?? 'main',
+          options: parsed.options,
+        }
+      );
+
+      console.timeEnd('✔ The search for changes is completed in:');
+      log(`📦 ${changed.size} of modified files found!`);
+
+      if(changed?.size) {
+        // @ts-ignore
+        process.env.STORYBOOK_CHANGED = Array.from(changed);
+      }
+    } else {
+      console.error(`🔥 The to-config configuration to-config.json was not found on the path: ${configPath}, you may have forgotten to create it!`);
+      return;
+    }
+
+  }
+
   if (runnerOptions.coverageDirectory) {
     process.env.STORYBOOK_COVERAGE_DIRECTORY = runnerOptions.coverageDirectory;
   }
@@ -385,12 +435,18 @@ const main = async () => {
   }
 
   if (runnerOptions.indexJson || shouldRunIndexJson) {
-    indexTmpDir = await getIndexTempDir(targetURL);
-    process.env.TEST_ROOT = indexTmpDir;
-    process.env.TEST_MATCH = '**/*.test.js';
+
+    if(runnerOptions.changed) {
+      log('⚠ The --changed flag does not support working with --index-json, errors may occur!');
+    } else {
+      indexTmpDir = await getIndexTempDir(targetURL);
+      process.env.TEST_ROOT = indexTmpDir;
+      process.env.TEST_MATCH = '**/*.test.js';
+    }
   }
 
   const { storiesPaths, lazyCompilation } = getStorybookMetadata();
+
   process.env.STORYBOOK_STORIES_PATTERN = storiesPaths;
 
   if (runnerOptions.failOnConsole) {

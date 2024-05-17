@@ -1,5 +1,5 @@
-import type { CliOptions } from './getCliOptions';
 import { CommanderError, program } from 'commander';
+import type { CliOptions } from './getCliOptions';
 
 type ParsedCliOptions = {
   options: CliOptions['runnerOptions'];
@@ -11,6 +11,10 @@ export const getParsedCliOptions = (): ParsedCliOptions => {
     .option(
       '-i, --index-json',
       'Run in index json mode. Automatically detected (requires a compatible Storybook)'
+    )
+    .option(
+      '--changed',
+      'OnlyChanged Mode'
     )
     .option(
       '-s, --stories-json',

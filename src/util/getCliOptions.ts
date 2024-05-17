@@ -1,5 +1,5 @@
-import { getParsedCliOptions } from './getParsedCliOptions';
 import type { BrowserType } from 'jest-playwright-preset';
+import { getParsedCliOptions } from './getParsedCliOptions';
 
 export type JestOptions = string[];
 
@@ -16,7 +16,8 @@ export type CliOptions = {
     failOnConsole?: boolean;
     includeTags?: string;
     excludeTags?: string;
-    skipTags?: string;
+    changed?: string; 
+    skipTags?: string;   
   } & Record<string, string | boolean>;
   jestOptions: JestOptions;
 };
@@ -36,6 +37,7 @@ const STORYBOOK_RUNNER_COMMANDS: StorybookRunnerCommand[] = [
   'includeTags',
   'excludeTags',
   'skipTags',
+  'changed'
 ];
 
 function copyOption<ObjType extends object, KeyType extends keyof ObjType>(
