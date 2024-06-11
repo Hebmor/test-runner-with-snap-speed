@@ -81,7 +81,7 @@ npmScopes:
 {
   "dirs": ["/packages/ui/src/components"],
   "marks": [".stories"],
-  "includeGitPaths": ["package.json", "tsconfig.json", "yarn.lock"],
+  "gitPaths": ["!index.ts", "!CHANGELOG.md", "!package.json", "!tsconfig.json", "!tsup.config", "/ui/src", "!packages/ui/src/styles/theme.ts", "/storybook/styles", "/storybook/.storybook/", "/lib/src", "/icons/src", "!.png", "!.svg","/map/src/components"],
   "mainBranch": "origin/main",
   "options": {
     "exclude": {
@@ -127,3 +127,5 @@ npx yarn npm publish
 - Добавлена опция `--changed`, включающая запуск тестов только для изменившихся компонентов.
 - В `src/test-storybook.ts` добавлена логика получения изменённых файлов при активированном флаге `--changed` и списка stories, для которых нужно запустить тесты.
 - В `src/jest-playwright.ts` добавлена логика фильтрации тестов, чтобы они запускались только для изменённых компонентов.
+
+### 🚧 [CHANGELOG](https://git.ftc.ru/webdev/frontend/test-runner-with-test-optimization/-/blob/main/CHANGELOG-OPTIMIZATION.md?ref_type=heads)
