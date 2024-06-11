@@ -362,18 +362,17 @@ const main = async () => {
     if(fs.existsSync(configPath)) {
       const config = fs.readFileSync(configPath);
       //@ts-ignore
-      const parsed: {dirs: string[]; marks: string[]; ignoreGitFiles: string[]; mainBranch: string, options: any} = JSON.parse(config as string);
+      const parsed: {dirs: string[]; marks: string[]; gitPaths: string[]; mainBranch: string, options: any} = JSON.parse(config as string);
 
       process.env.STORYBOOK_CHANGED_ONLY = 'true';
 
       const folders = parsed.dirs.map(dir => path.join(workingDir, dir));
 
       const defaultMainBranch = 'main';
-      const defaultIgnoreGitFiles = ["package.json", "tsconfig.json", "yarn.lock", ".gitignore", ".yarn", "to-config.json", ".pnp.cjs", "__snapshots__", ".storybook"];
       const defaultMarks = ['.stories'];
 
       log(`🎯 Target branch for comparison: ${parsed.mainBranch ?? defaultMainBranch}`);
-      log(`📁 These occurrences will be ignored: ${parsed.ignoreGitFiles ?? defaultIgnoreGitFiles}`);
+      log(`📁 Git Paths: ${parsed.gitPaths}`);
       log(`📑 Tags for story files in Storybook: ${parsed.marks ?? defaultMarks}`);
       log(`📁 Directories where storybook stories will be searched: ${parsed.dirs}`);
 
@@ -382,7 +381,7 @@ const main = async () => {
         {
           folders,
           marks: parsed.marks,
-          ignoreFiles: parsed.ignoreGitFiles,
+          paths: parsed.gitPaths,
           mainBranch: parsed.mainBranch ?? 'main',
           options: parsed.options,
         }

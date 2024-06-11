@@ -3,20 +3,23 @@ import { execSync } from 'child_process';
 import path from 'path';
 
 export function getChangedGitFiles({
-  ignoreFiles,
+  paths,
   mainBranch = 'main',
 }: {
-  ignoreFiles: string[];
+  paths: string[];
   mainBranch?: string;
 }) {
   const command = `git --no-pager diff --minimal --name-only ${mainBranch}`;
   const diffOutput = execSync(command).toString();
+  const excludePaths = paths.filter((path) => path.startsWith('!')).map(item => item.replace('!', ''));
+  const includePaths = paths.filter((path) => !path.startsWith('!'));
 
   return diffOutput
     .toString()
     .split('\n')
     .filter(Boolean)
-    .filter((file) => !ignoreFiles.some((ignoreFile) => file.includes(ignoreFile)));
+    .filter((file) => includePaths.some((path) => file.includes(path)))
+    .filter((file) => !excludePaths.some((path) => file.includes(path)));
 }
 
 export async function getFileDependencies({
@@ -49,19 +52,19 @@ export async function getFileDependencies({
 }
 
 export async function getChangedFiles({
-  ignoreFiles,
+  paths,
   mainBranch,
   folders,
   options,
   marks,
 }: {
   folders: string[];
-  ignoreFiles: string[];
+  paths: string[];
   mainBranch?: string;
   options?: Pick<any, 'reaches'>;
   marks: string[];
 }) {
-  const changed: string[] = getChangedGitFiles({ ignoreFiles, mainBranch });
+  const changed: string[] = getChangedGitFiles({ paths, mainBranch });
 
   console.log('👀 GIT DIFF:', changed);
 

@@ -67,13 +67,13 @@ npmScopes:
 ### 🏗 Настройка конфигурации
 Для корректной работы создайте файл `to-config.json` в корне вашего проекта и укажите настройки:
 
-| Название       | Описание                                                                      | Пример                                                                            | Значение по умолчанию                                                                                                              |
-| -------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| dirs           | Список директорий, где dependency cruiser будет искать файлы с метками marks. | /packages/ui/src/components                                                       |                                                                                                                                    |
-| marks          | Метки файлов историй Storybook                                                | [.stories]                                                                        | [.stories]                                                                                                                         |
-| ignoreGitFiles | Файлы, которые нужно игнорировать в команде `git diff`                        | ["package.json", "tsconfig.json", "yarn.lock"]                                    | ["package.json", "tsconfig.json", "yarn.lock", ".gitignore", ".yarn", "to-config.json", ".pnp.cjs", "__snapshots__", ".storybook"] |
-| mainBranch     | Целевая ветка для сравнения                                                   | origin/main                                                                       | main                                                                                                                               |
-| options        | Опции для dependency cruiser                                                  | https://github.com/sverweij/dependency-cruiser/blob/main/doc/options-reference.md |                                                                                                                                    |
+| Название       | Описание                                                                       | Пример                                                                            | Значение по умолчанию |
+| -------------- |--------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|---------------------|
+| dirs           | Список директорий, где dependency cruiser будет искать файлы с метками marks.  | /packages/ui/src/components                                                       |                     |
+| marks          | Метки файлов историй Storybook                                                 | [.stories]                                                                        | [.stories]          |
+| gitPaths | Позволяет включать и исключать пути из разницы между целевой и текущей веткой. | ["src/components", "!src/components/index.ts"]                                    |                     |
+| mainBranch     | Целевая ветка для сравнения                                                    | origin/main                                                                       | main                |
+| options        | Опции для dependency cruiser                                                   | https://github.com/sverweij/dependency-cruiser/blob/main/doc/options-reference.md |                     |
 
 Пример `to-config.json`:
 
@@ -81,7 +81,7 @@ npmScopes:
 {
   "dirs": ["/packages/ui/src/components"],
   "marks": [".stories"],
-  "ignoreGitFiles": ["package.json", "tsconfig.json", "yarn.lock"],
+  "includeGitPaths": ["package.json", "tsconfig.json", "yarn.lock"],
   "mainBranch": "origin/main",
   "options": {
     "exclude": {

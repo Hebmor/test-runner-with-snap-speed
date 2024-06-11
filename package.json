@@ -1,6 +1,6 @@
 {
   "name": "@webdev/test-runner-with-test-optimization",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "description": "Test runner for Storybook stories",
   "keywords": [
     "storybook-addons",
@@ -12,7 +12,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/Hebmor/test-runner-with-snap-speed"
+    "url": "https://git.ftc.ru/webdev/frontend/test-runner-with-test-optimization"
   },
   "license": "MIT",
   "author": "Hebmor",

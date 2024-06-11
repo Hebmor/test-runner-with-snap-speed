@@ -1,5 +1,5 @@
 {
   "dirs": ["stories"],
   "marks": [".stories"],
-  "ignoreFiles": ["package.json", "tsconfig.json", "yarn.lock", ".gitignore", ".yarnrc.yml"]
+  "gitPaths": ["package.json", "tsconfig.json", "yarn.lock", ".gitignore", ".yarnrc.yml"]
 }
