@@ -9,6 +9,8 @@ export function getChangedGitFiles({
   paths: string[];
   mainBranch?: string;
 }) {
+  const commandFetch = `git fetch`;
+  execSync(commandFetch);
   const command = `git --no-pager diff --minimal --name-only ${mainBranch}`;
   const diffOutput = execSync(command).toString();
   const excludePaths = paths.filter((path) => path.startsWith('!')).map(item => item.replace('!', ''));
